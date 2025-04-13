@@ -23,8 +23,6 @@ exports.deleteFile = async (filename) => {
     await unlinkAsync(filePath);
 };
 
-// Пример функции для отправки логов (если потребуется вызывать её из контроллера)
-// (Однако основное логирование реализовано через middleware)
 exports.logRequest = async (req, res) => {
     const startTime = new Date().toISOString();
     try {

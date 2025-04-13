@@ -1,22 +1,35 @@
 const fileService = require('./service');
+const { sendLog } = require('../log/logging');
 
-exports.uploadImage = (req, res) => {
+exports.uploadImage = async (req, res) => {
     if (!req.file) {
+        await sendLog('Ошибка: файл не загружен');
         return res.status(400).json({ message: 'Файл не загружен' });
     }
+    await sendLog(`Файл ${req.file.filename} успешно загружен`);
     res.status(200).json({ message: 'Файл успешно загружен', filename: req.file.filename });
 };
 
-exports.getImage = (req, res) => {
+exports.getImage = async (req, res) => {
     const filename = req.params.filename;
-    fileService.getFilePath(filename)
-        .then(filePath => res.sendFile(filePath))
-        .catch(err => res.status(404).json({ message: 'Файл не найден' }));
+    try {
+        const filePath = await fileService.getFilePath(filename);
+        await sendLog(`Файл ${filename} успешно получен`);
+        res.sendFile(filePath);
+    } catch (err) {
+        await sendLog(`Ошибка: файл ${filename} не найден`);
+        res.status(404).json({ message: 'Файл не найден' });
+    }
 };
 
-exports.deleteImage = (req, res) => {
+exports.deleteImage = async (req, res) => {
     const filename = req.params.filename;
-    fileService.deleteFile(filename)
-        .then(() => res.status(200).json({ message: 'Файл успешно удалён' }))
-        .catch(err => res.status(404).json({ message: 'Файл не найден или ошибка удаления' }));
+    try {
+        await fileService.deleteFile(filename);
+        await sendLog(`Файл ${filename} успешно удалён`);
+        res.status(200).json({ message: 'Файл успешно удалён' });
+    } catch (err) {
+        await sendLog(`Ошибка: файл ${filename} не найден или не удалён`);
+        res.status(404).json({ message: 'Файл не найден или ошибка удаления' });
+    }
 };
